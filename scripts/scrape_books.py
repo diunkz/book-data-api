@@ -6,12 +6,40 @@ import os
 import logging
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional, Iterable
+from decimal import Decimal, InvalidOperation
 
 from src.core.logging_config import setup_logging
 
 BASE_URL = "https://books.toscrape.com/"
 CATALOGUE_URL = f"{BASE_URL}catalogue/"
 RATING_MAP = {"One": 1, "Two": 2, "Three": 3, "Four": 4, "Five": 5}
+
+
+def get_total_pages(client: httpx.Client) -> int:
+    """
+    Raspa a primeira página do catálogo para descobrir o número total de páginas.
+    Retorna 50 como um valor padrão em caso de erro.
+    """
+    logger = logging.getLogger(__name__)
+    url = f"{CATALOGUE_URL}page-1.html"
+    try:
+        response = client.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "lxml")
+        # Encontra o texto "Page 1 of 50"
+        pager_text = soup.find("li", class_="current").text.strip()
+        # Usa regex para extrair o último número
+        match = re.search(r"Page \d+ of (\d+)", pager_text)
+        if match:
+            total = int(match.group(1))
+            logger.info(f"Total de páginas detectado no site: {total}")
+            return total
+    except Exception as e:
+        logger.warning(
+            f"Não foi possível detectar o total de páginas dinamicamente. "
+            f"Usando 50 como padrão. Erro: {e}"
+        )
+    return 50
 
 
 def scrape_book_details(
@@ -47,16 +75,34 @@ def scrape_book_details(
         image_tag = soup.find("div", class_="item active").find("img")
         image_url = BASE_URL + image_tag["src"].replace("../../", "")
 
+        price_text = soup.find("p", class_="price_color").text
+
+        currency = "N/A"
+        if "£" in price_text:
+            currency = "GBP"
+        elif "$" in price_text:
+            currency = "USD"
+        elif "€" in price_text:
+            currency = "EUR"
+        elif "R$" in price_text:
+            currency = "BRL"
+
+        try:
+            price_value = Decimal(re.sub(r"[^0-9.]", "", price_text))
+        except (InvalidOperation, TypeError):
+            price_value = Decimal("0.00")
+
         return {
             "upc": product_info.get("UPC"),
             "book_name": soup.find("h1").text,
+            "currency": currency,
+            "price": price_value,
+            "quantity": quantity,
+            "availability": quantity > 0,
+            "rating": rating,
+            "number_of_reviews": int(product_info.get("Number of reviews", 0)),
             "category": category,
             "description": description,
-            "rating": rating,
-            "price": soup.find("p", class_="price_color").text,
-            "availability": quantity > 0,
-            "quantity": quantity,
-            "number_of_reviews": int(product_info.get("Number of reviews", 0)),
             "image_url": image_url,
             "source_page": page_number,
         }
@@ -113,7 +159,10 @@ def load_scrape_state(csv_filename: str) -> tuple[set, int]:
 
 
 def determine_page_iterator(
-    pages_to_scrape: str, append_mode: bool, last_scraped_page: int
+    pages_to_scrape: str,
+    append_mode: bool,
+    last_scraped_page: int,
+    total_pages: int,
 ) -> Optional[Iterable[int]]:
     """Determina o range de páginas a serem raspadas com base nos argumentos."""
     logger = logging.getLogger(__name__)
@@ -122,7 +171,7 @@ def determine_page_iterator(
         start_page = 1
         if append_mode and last_scraped_page > 0:
             start_page = last_scraped_page
-        return range(start_page, 51)  # O site tem 50 páginas
+        return range(start_page, total_pages + 1)
     else:
         try:
             return [int(p.strip()) for p in pages_to_scrape.split(",")]
@@ -179,15 +228,10 @@ def main(pages_to_scrape: str, append_mode: bool, csv_filename: str):
     if append_mode and file_exists:
         scraped_upcs, last_scraped_page = load_scrape_state(csv_filename)
 
-    page_iterator = determine_page_iterator(
-        pages_to_scrape, append_mode, last_scraped_page
-    )
-    if page_iterator is None:
-        return  # Termina a execução se as páginas forem inválidas
-
     headers = [
         "upc",
         "book_name",
+        "currency",
         "price",
         "quantity",
         "availability",
@@ -208,6 +252,16 @@ def main(pages_to_scrape: str, append_mode: bool, csv_filename: str):
         if file_mode == "w":
             writer.writeheader()
 
+        total_pages = 50
+        if pages_to_scrape.lower() == "all":
+            total_pages = get_total_pages(client)
+
+        page_iterator = determine_page_iterator(
+            pages_to_scrape, append_mode, last_scraped_page, total_pages
+        )
+        if page_iterator is None:
+            return
+
         if isinstance(page_iterator, range):
             pages = f"todas a partir de {page_iterator.start}"
         else:
@@ -220,7 +274,6 @@ def main(pages_to_scrape: str, append_mode: bool, csv_filename: str):
 
 
 if __name__ == "__main__":
-    # ... (A parte do argparse continua a mesma) ...
     parser = argparse.ArgumentParser(
         description="Web scraper para o site books.toscrape.com",
         formatter_class=argparse.RawTextHelpFormatter,
