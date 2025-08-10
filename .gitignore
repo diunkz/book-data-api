@@ -9,11 +9,15 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 
-# Banco de Dados e Dados
+# Data and db
 /data/database.db
 *.csv
 
-# Configurações de IDE
+# IDE configs
 .vscode/
 .idea/
+
+# Log files
+logs/
+*.log
 
