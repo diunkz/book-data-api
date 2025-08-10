@@ -11,6 +11,9 @@ dependencies = [
     "httpx (>=0.28.1,<0.29.0)",
     "beautifulsoup4 (>=4.13.4,<5.0.0)",
     "lxml (>=6.0.0,<7.0.0)",
+    "sqlalchemy (>=2.0.42,<3.0.0)",
+    "alembic (>=1.16.4,<2.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)",
 ]
 
 [build-system]
