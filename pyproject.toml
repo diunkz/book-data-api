@@ -6,13 +6,12 @@ authors = [
     {name = "diunkz",email = "noahdiunkz@gmail.com"}
 ]
 readme = "README.md"
-requires-python = "3.13.2"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "httpx (>=0.28.1,<0.29.0)",
     "beautifulsoup4 (>=4.13.4,<5.0.0)",
     "lxml (>=6.0.0,<7.0.0)",
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -20,4 +19,14 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12.8"
+black = "^25.1.0"
 
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C90"] # Regras comuns de lint (E = erros, W = avisos, etc)
+ignore = ["E203"] # Ignorar conflitos comuns com Black    
+
+[tool.black]
+line-length = 88
