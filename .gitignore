@@ -1,23 +1,38 @@
 # Poetry / Virtual Environments
-.venv/
-.env
-poetry.lock
+/.venv/
+.env*
+
 
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+
+# Cache / Tools
 .ruff_cache/
 .pytest_cache/
+.mypy_cache/
 
-# Data and db
-/data/database.db
-*.csv
 
-# IDE configs
-.vscode/
-.idea/
+# Data / Db / Logs
 
-# Log files
+data/
 logs/
+
+# Exception
+!data/.gitkeep
+!logs/.gitkeep
+
+# Extensions
+*.csv
+*.db
+*.sqlite3
 *.log
 
+
+# System / IDE
+.DS_Store
+.vscode/
+.idea/
