@@ -28,7 +28,7 @@ def setup_logging():
             "file": {
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "default",
-                "filename": os.path.join(LOGS_DIR, "scrape.log"),
+                "filename": os.path.join(LOGS_DIR, "book_data_api.log"),
                 "maxBytes": 1024 * 1024 * 5,
                 "backupCount": 3,
                 "encoding": "utf-8",
