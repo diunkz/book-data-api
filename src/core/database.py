@@ -9,5 +9,5 @@ DATABASE_URL = "sqlite:///./data/books.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base que nossos modelos ORM irão herdar
+# Base que os modelos ORM irão herdar
 Base = declarative_base()

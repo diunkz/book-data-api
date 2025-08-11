@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from sqlalchemy.orm import Session
 from src.core.database import SessionLocal
 from src.core.models import Book
-from src.core.logging_config import setup_logging
+from src.core.logging_config import setup_pipeline_logging
 
 
 def load_data_from_csv(db: Session, csv_filename: str, clear_table: bool):
@@ -76,7 +76,7 @@ def load_data_from_csv(db: Session, csv_filename: str, clear_table: bool):
 
 def main(csv_filename: str, clear_table: bool):
     """Função principal para carregar dados do CSV para o banco."""
-    setup_logging()
+    setup_pipeline_logging()
     logger = logging.getLogger(__name__)
 
     db = None

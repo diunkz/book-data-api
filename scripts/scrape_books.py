@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from typing import List, Dict, Optional, Iterable
 from decimal import Decimal, InvalidOperation
 
-from src.core.logging_config import setup_logging
+from src.core.logging_config import setup_pipeline_logging
 
 BASE_URL = "https://books.toscrape.com/"
 CATALOGUE_URL = f"{BASE_URL}catalogue/"
@@ -219,7 +219,7 @@ def run_scraper(
 
 def main(pages_to_scrape: str, append_mode: bool, csv_filename: str):
     """Função principal que orquestra o processo de scraping."""
-    setup_logging()
+    setup_pipeline_logging()
     logger = logging.getLogger(__name__)
 
     scraped_upcs, last_scraped_page = set(), 0
