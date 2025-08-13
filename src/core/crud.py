@@ -4,7 +4,8 @@ from decimal import Decimal
 from typing import Optional, List
 from statistics import median
 
-from . import models
+from . import models, schemas
+from .security import get_password_hash
 
 
 def get_books(db: Session, skip: int = 0, limit: int = 100):
@@ -122,3 +123,18 @@ def get_books_by_price_range(db: Session, min_price: Decimal, max_price: Decimal
         .filter(models.Book.price.between(min_price, max_price))
         .all()
     )
+
+
+def get_user_by_username(db: Session, username: str):
+    """Busca um usuário pelo seu nome de usuário."""
+    return db.query(models.User).filter(models.User.username == username).first()
+
+
+def create_user(db: Session, user: schemas.UserCreateSchema):
+    """Cria um novo usuário no banco de dados."""
+    hashed_password = get_password_hash(user.password)
+    db_user = models.User(username=user.username, hashed_password=hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user

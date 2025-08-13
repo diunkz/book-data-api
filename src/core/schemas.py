@@ -71,3 +71,34 @@ class StatsOverviewSchema(BaseModel):
     class Config:
         from_attributes = True
         populate_by_name = True
+
+
+class UserSchema(BaseModel):
+    """Schema para exibir dados de um usuário (sem a senha)."""
+
+    id: int
+    username: str
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+class UserCreateSchema(BaseModel):
+    """Schema para criar um novo usuário."""
+
+    username: str
+    password: str
+
+
+class TokenSchema(BaseModel):
+    """Schema para a resposta do token."""
+
+    access_token: str
+    token_type: str
+
+
+class TokenDataSchema(BaseModel):
+    """Schema para os dados contidos dentro do token JWT."""
+
+    username: Optional[str] = None

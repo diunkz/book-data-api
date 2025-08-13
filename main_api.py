@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.api import books, utils, stats  # Importa os novos módulos de rota
+from src.api import books, utils, stats, auth  # Importa os novos módulos de rota
 from src.core import models
 from src.core.database import engine
 from src.core.logging_config import setup_api_logging
@@ -19,6 +19,7 @@ app = FastAPI(
 app.include_router(utils.router)
 app.include_router(books.router)
 app.include_router(stats.router)
+app.include_router(auth.router)
 
 
 @app.get("/", tags=["Root"])
