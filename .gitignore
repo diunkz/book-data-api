@@ -1,6 +1,6 @@
 # Poetry / Virtual Environments
 /.venv/
-.env*
+.env
 
 
 # Python
